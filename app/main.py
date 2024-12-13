@@ -3,12 +3,13 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 from models import Transactions,Invoice
 from db import create_all_tables
-from routers.customers import routerCustomers
-from routers.transactions import routerTransactions
-from routers.invoices import routerInvoices
+from app.routers.customers import routerCustomers
+from app.routers.transactions import routerTransactions
+from app.routers.invoices import routerInvoices
 
 
 app = FastAPI(lifespan=create_all_tables)
+
 app.include_router(routerCustomers)
 app.include_router(routerTransactions)
 app.include_router(routerInvoices)
