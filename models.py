@@ -5,6 +5,7 @@ class CustomerPlan(SQLModel,table=True):
     id: int = Field(primary_key=True)
     plan_id: int = Field(foreign_key="plan.id")
     customer_id : int = Field(foreign_key="customer.id")
+    status: str = Field(default=None)
     
 
 class Plan(SQLModel, table=True):

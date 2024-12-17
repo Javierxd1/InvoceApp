@@ -1,5 +1,5 @@
 from fastapi import HTTPException, status, APIRouter
-from models import Customer,CustomerCreate,CustomerUpdate
+from models import Customer,CustomerCreate, CustomerPlan,CustomerUpdate,Plan
 from db import SessionDep
 from sqlmodel import select
 
@@ -53,3 +53,29 @@ async def updateCustomer(id:int, customer_data: CustomerUpdate ,session: Session
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,detail='El cliente no existe'
         )
+
+@routerCustomers.post("/customers/{customer_id}/plans/{plan_id}",tags=['Customers'])
+async def suscribe_customer(customer_id:int, plan_id:int, status: str, session:SessionDep):
+    customer_db = session.get(Customer,customer_id)
+    plan_db = session.get(Plan, plan_id)
+
+    if not customer_db or not plan_db:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No existe el clinte o no existe el plan")
+    
+    customerPlan_db = CustomerPlan(plan_id=plan_db.id,customer_id=customer_db.id, status=status)
+    session.add(customerPlan_db)
+    session.commit()
+    session.refresh(customerPlan_db)
+    return customerPlan_db
+
+
+@routerCustomers.get("/customers/{customer_id}/plans}",tags=['Customers'])
+async def list_suscriptions_of_customer (customer_id:int, status_plan: str, session:SessionDep):
+    customer_db = session.get(Customer,customer_id)
+
+    if not customer_db:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail='El cliente no existe')
+    
+    return customer_db.plans
+
+
