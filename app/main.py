@@ -6,6 +6,7 @@ from db import create_all_tables
 from app.routers.customers import routerCustomers
 from app.routers.transactions import routerTransactions
 from app.routers.invoices import routerInvoices
+from app.routers.plans import routerPlans
 
 
 app = FastAPI(lifespan=create_all_tables)
@@ -13,6 +14,7 @@ app = FastAPI(lifespan=create_all_tables)
 app.include_router(routerCustomers)
 app.include_router(routerTransactions)
 app.include_router(routerInvoices)
+app.include_router
 
 
 @app.get('/')
