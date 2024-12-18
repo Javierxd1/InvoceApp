@@ -1,11 +1,17 @@
+from enum import Enum
 from pydantic import BaseModel,EmailStr
 from sqlmodel import SQLModel,Field,Relationship
+
+class statusEnum(str,Enum): #Permite definir los valores pretederminados del Status
+    Active ='Activo'
+    Inactive = 'Inactivo'
+
 
 class CustomerPlan(SQLModel,table=True):
     id: int = Field(primary_key=True)
     plan_id: int = Field(foreign_key="plan.id")
     customer_id : int = Field(foreign_key="customer.id")
-    status: str = Field(default=None)
+    status: statusEnum = Field(default=statusEnum.Active) #La clase Enum permite elegir valores puntuales
     
 
 class Plan(SQLModel, table=True):

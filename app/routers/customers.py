@@ -1,5 +1,5 @@
-from fastapi import HTTPException, status, APIRouter
-from models import Customer,CustomerCreate, CustomerPlan,CustomerUpdate,Plan
+from fastapi import HTTPException, Query, status, APIRouter
+from models import Customer,CustomerCreate, CustomerPlan,CustomerUpdate,Plan, statusEnum
 from db import SessionDep
 from sqlmodel import select
 
@@ -55,27 +55,35 @@ async def updateCustomer(id:int, customer_data: CustomerUpdate ,session: Session
         )
 
 @routerCustomers.post("/customers/{customer_id}/plans/{plan_id}",tags=['Customers'])
-async def suscribe_customer(customer_id:int, plan_id:int, status: str, session:SessionDep):
+async def suscribe_customer(customer_id:int, 
+                            plan_id:int, 
+                            status: str, 
+                            session:SessionDep,
+                            plan_status: statusEnum = Query()): #La clase Query permite hacer algo asì "customer?key=value"
     customer_db = session.get(Customer,customer_id)
     plan_db = session.get(Plan, plan_id)
 
     if not customer_db or not plan_db:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No existe el clinte o no existe el plan")
     
-    customerPlan_db = CustomerPlan(plan_id=plan_db.id,customer_id=customer_db.id, status=status)
+    customerPlan_db = CustomerPlan(plan_id=plan_db.id,customer_id=customer_db.id, status=plan_status)
     session.add(customerPlan_db)
     session.commit()
     session.refresh(customerPlan_db)
     return customerPlan_db
 
 
-@routerCustomers.get("/customers/{customer_id}/plans}",tags=['Customers'])
-async def list_suscriptions_of_customer (customer_id:int, status_plan: str, session:SessionDep):
+@routerCustomers.get("/customers/{customer_id}/plans",tags=['Customers'])
+async def list_suscriptions_of_customer (customer_id:int,
+                                        session:SessionDep,
+                                        plan_status : statusEnum = Query()):
     customer_db = session.get(Customer,customer_id)
 
     if not customer_db:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail='El cliente no existe')
     
-    return customer_db.plans
+    query = select(CustomerPlan).where(CustomerPlan.customer_id == customer_id).where(CustomerPlan.status==plan_status)
+    plans = session._exec(query)
+    return plans
 
 
