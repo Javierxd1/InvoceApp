@@ -1,6 +1,8 @@
 from enum import Enum
 from pydantic import BaseModel,EmailStr, field_validator
-from sqlmodel import SQLModel,Field,Relationship
+from sqlalchemy import Select
+from sqlmodel import SQLModel,Field,Relationship,Session
+from db import engine
 
 class statusEnum(str,Enum): #Permite definir los valores pretederminados del Status
     Active ='Activo'
@@ -26,12 +28,19 @@ class Plan(SQLModel, table=True):
 class CustomerBase(SQLModel):
     name: str = Field(default=None)
     description : str | None = Field(default=None)
-    email : EmailStr = Field(default=None)
+    email : EmailStr = Field(default=None) # Se añande el EmailStr, para validar la insersión de mails.
     age : int = Field(default=None)
 
+    #Se crear un validador contra la base de datos del email ingresado.
     @field_validator('email')
     @classmethod
     def validate_email(cls, value):
+        session = Session(engine) #Se deben importar desde db y desde SQLmodel
+        query = Select(Customer).where(Customer.email == value)
+        result = session.exec(query).first()
+
+        if result != None:
+            raise ValueError('Este Email ya está registrado')
         return value
 
 class CustomerCreate(CustomerBase):
