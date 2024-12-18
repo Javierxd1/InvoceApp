@@ -1,4 +1,5 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+import time
 from datetime import datetime
 from zoneinfo import ZoneInfo
 from db import create_all_tables
@@ -15,6 +16,14 @@ app.include_router(routerTransactions)
 app.include_router(routerInvoices)
 app.include_router(routerPlans)
 
+@app.middleware("http")
+async def log_request_time(request: Request, call_next):
+    start_time = time.time() #Mide el tiempo inicial antes del request
+    response = await call_next(request) #Función que espera, mientras se ejecuta el request
+    process_time = time.time() - start_time #Tiempo final después del request
+    print(f"Request realizado a {request.url} se completo en {process_time:.4f} segundos") #Impresión del tiempo
+    return response
+    
 
 @app.get('/')
 async def root():
@@ -30,7 +39,7 @@ country_timezones = {
 
 
 @app.get("/time/{iso_code}/{format}")
-async def time(iso_code: str,format: str):
+async def get_time_by_iso(iso_code: str,format: str):
     iso = iso_code.upper()
     timeZone = country_timezones.get(iso)
 
