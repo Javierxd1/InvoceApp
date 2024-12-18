@@ -1,5 +1,5 @@
 from enum import Enum
-from pydantic import BaseModel,EmailStr
+from pydantic import BaseModel,EmailStr, field_validator
 from sqlmodel import SQLModel,Field,Relationship
 
 class statusEnum(str,Enum): #Permite definir los valores pretederminados del Status
@@ -28,6 +28,11 @@ class CustomerBase(SQLModel):
     description : str | None = Field(default=None)
     email : EmailStr = Field(default=None)
     age : int = Field(default=None)
+
+    @field_validator('email')
+    @classmethod
+    def validate_email(cls, value):
+        return value
 
 class CustomerCreate(CustomerBase):
     pass
