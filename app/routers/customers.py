@@ -5,7 +5,7 @@ from sqlmodel import select
 
 routerCustomers = APIRouter()
 
-@routerCustomers.post("/customers", response_model = Customer, tags=['Customers'])
+@routerCustomers.post("/customers", response_model = Customer, tags=['Customers'], status_code= status.HTTP_201_CREATED)
 async def create_costumer(customer_data: CustomerCreate, session: SessionDep):
     customerRegister = Customer.model_validate(customer_data.model_dump())
     session.add(customerRegister) #Crea la sentencia SQL
